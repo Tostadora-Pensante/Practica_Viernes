@@ -57,6 +57,12 @@ def deshacer_ultima_atencion():
 #mostrar_estado()
 #si se atendió a Ana y después a Luis, el primer deshacer devuelve a Luis al inicio; otro deshacer devuelve a Ana antes que Luis. ¿Por qué?
 #R: Porque la pila sigue el principio del LIFO, por lo que el ultimo elemento agregado a la pila es el primer eliminado, por ende al deshacer la ultima atencion, se restaura primero a luis y luego a ana
+def consultar_siguiente():
+    if not cola_pendientes:
+        return None
+    return cola_pendientes[0]
+
+
 
 def ejecutar_menu():
     while True:
@@ -64,7 +70,8 @@ def ejecutar_menu():
         print("2. Atender siguiente")
         print("3. Deshacer última atención")
         print("4. Mostrar estado")
-        print("5. Salir")
+        print("5. Consultar Siguiente")
+        print("0. Salir")
         opcion = input("Opción: ").strip()
 
         if opcion == "1":
@@ -79,6 +86,8 @@ def ejecutar_menu():
         elif opcion == "4":
             mostrar_estado()
         elif opcion == "5":
+            consultar_siguiente()
+        elif opcion == "0":
             break
         else:
             print("Opción inválida")
