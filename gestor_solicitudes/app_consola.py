@@ -56,3 +56,7 @@ def deshacer_ultima_atencion():
 
 print("Restaurada:", deshacer_ultima_atencion())
 mostrar_estado()
+#si se atendió a Ana y después a Luis, el primer deshacer devuelve a Luis al inicio; otro deshacer devuelve a Ana antes que Luis. ¿Por qué?
+#R: Porque la pila sigue el principio del LIFO, por lo que el ultimo elemento agregado a la pila es el primer eliminado, por ende al deshacer la ultima atencion, se restaura primero a luis y luego a ana
+print("="*20)
+
