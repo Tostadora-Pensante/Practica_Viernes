@@ -42,3 +42,17 @@ def atender_siguiente():
 
 print("Atendida:", atender_siguiente())
 mostrar_estado()
+
+print("="*20)
+def deshacer_ultima_atencion():
+    if not pila_historial:
+        return None
+
+    solicitud = pila_historial.pop()
+    solicitud["estado"] = "pendiente"
+    cola_pendientes.insert(0, solicitud)
+    return solicitud
+
+
+print("Restaurada:", deshacer_ultima_atencion())
+mostrar_estado()
