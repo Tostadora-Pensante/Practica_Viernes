@@ -24,7 +24,12 @@ def registrar_solicitud(cliente, asunto):
     return solicitud
 
 
+#registrar_solicitud("Ana", "No conecta a Wi-Fi")
+#registrar_solicitud("Luis", "Impresora sin papel")
+#registrar_solicitud("Sofía", "Equipo lento")
+#mostrar_estado()
 
+print("="*20)
 def atender_siguiente():
     if not cola_pendientes:
         return None
@@ -35,6 +40,9 @@ def atender_siguiente():
     return solicitud
 
 
+#print("Atendida:", atender_siguiente())
+#mostrar_estado()
+
 def deshacer_ultima_atencion():
     if not pila_historial:
         return None
@@ -44,6 +52,9 @@ def deshacer_ultima_atencion():
     cola_pendientes.insert(0, solicitud)
     return solicitud
 
+
+#print("Restaurada:", deshacer_ultima_atencion())
+#mostrar_estado()
 #si se atendió a Ana y después a Luis, el primer deshacer devuelve a Luis al inicio; otro deshacer devuelve a Ana antes que Luis. ¿Por qué?
 #R: Porque la pila sigue el principio del LIFO, por lo que el ultimo elemento agregado a la pila es el primer eliminado, por ende al deshacer la ultima atencion, se restaura primero a luis y luego a ana
 
