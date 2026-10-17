@@ -28,3 +28,17 @@ registrar_solicitud("Ana", "No conecta a Wi-Fi")
 registrar_solicitud("Luis", "Impresora sin papel")
 registrar_solicitud("Sofía", "Equipo lento")
 mostrar_estado()
+
+print("="*20)
+def atender_siguiente():
+    if not cola_pendientes:
+        return None
+
+    solicitud = cola_pendientes.pop(0)
+    solicitud["estado"] = "atendida"
+    pila_historial.append(solicitud)
+    return solicitud
+
+
+print("Atendida:", atender_siguiente())
+mostrar_estado()
