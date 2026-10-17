@@ -86,7 +86,7 @@ def ejecutar_menu():
         elif opcion == "4":
             mostrar_estado()
         elif opcion == "5":
-            consultar_siguiente()
+            print("el siguiente en la cola es:", consultar_siguiente())
         elif opcion == "0":
             break
         else:
