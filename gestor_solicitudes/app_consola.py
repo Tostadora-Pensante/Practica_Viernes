@@ -1,3 +1,4 @@
+#Ejercicio de ejemplo 1.
 cola_pendientes = []
 pila_historial = []
 siguiente_id = 1
