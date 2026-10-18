@@ -1,193 +1,101 @@
-# Ejercicio de ejemplo 1.
-cola_pendientes = []
-pila_historial = []
-siguiente_id = 1
+from flask import Flask, render_template, request, redirect, url_for, flash
+import logica
+
+app = Flask(__name__)
+app.secret_key = "clave_secreta_para_mensajes"
 
 
-def mostrar_estado():
-    print("\nPendientes:", cola_pendientes)
-    print("Historial:", pila_historial)
+@app.get("/")
+def inicio():
+    busqueda_resultado = None
+    busqueda_ubicacion = None
+
+    # Manejo de búsqueda por ID
+    id_buscar = request.args.get("id_buscar")
+    if id_buscar:
+        try:
+            id_num = int(id_buscar)
+            busqueda_resultado, busqueda_ubicacion = logica.buscar_solicitud(id_num)
+            if not busqueda_resultado:
+                flash(f"No se encontró ninguna solicitud con el ID {id_num}.", "warning")
+        except ValueError:
+            flash("El ID ingresado para buscar debe ser un número entero.", "danger")
+
+    siguiente = logica.consultar_siguiente()
+    pendientes, historial_cant, total_unicas = logica.obtener_estadisticas()
+
+    return render_template(
+        "index.html",
+        pendientes=logica.cola_pendientes,
+        historial=logica.pila_historial,
+        siguiente=siguiente,
+        busqueda_resultado=busqueda_resultado,
+        busqueda_ubicacion=busqueda_ubicacion,
+        cant_pendientes=pendientes,
+        cant_historial=historial_cant,
+        total_unicas=total_unicas
+    )
 
 
-def registrar_solicitud(cliente, asunto):
-    global siguiente_id
-    if not cliente.strip() or not asunto.strip():
-        return None
-
-    clienteunico = cliente.strip().lower()
-    asuntounico = asunto.strip().lower()
-
-    # Reto 5: Evitar duplicados en pendientes
-    for solicitud in cola_pendientes:
-        if (
-            solicitud["cliente"].strip().lower() == clienteunico
-            and solicitud["asunto"].strip().lower() == asuntounico
-        ):
-            return None
-
-    solicitud = {
-        "id": siguiente_id,
-        "cliente": cliente.strip(),
-        "asunto": asunto.strip(),
-        "estado": "pendiente",
-    }
-    cola_pendientes.append(solicitud)
-    siguiente_id += 1
-    return solicitud
+@app.post("/registrar")
+def registrar():
+    cliente = request.form.get("cliente", "")
+    asunto = request.form.get("asunto", "")
+    res = logica.registrar_solicitud(cliente, asunto)
+    if res:
+        flash(f"Solicitud #{res['id']} registrada con éxito.", "success")
+    else:
+        flash("No se pudo registrar: datos inválidos o solicitud duplicada en pendientes.", "danger")
+    return redirect(url_for("inicio"))
 
 
-# registrar_solicitud("Ana", "No conecta a Wi-Fi")
-# registrar_solicitud("Luis", "Impresora sin papel")
-# registrar_solicitud("Sofía", "Equipo lento")
-# mostrar_estado()
-
-print("=" * 20)
-
-
-def atender_siguiente():
-    if not cola_pendientes:
-        return None
-
-    solicitud = cola_pendientes.pop(0)
-    solicitud["estado"] = "atendida"
-    pila_historial.append(solicitud)
-    return solicitud
+@app.post("/atender")
+def atender():
+    res = logica.atender_siguiente()
+    if res:
+        flash(f"Solicitud #{res['id']} de {res['cliente']} atendida.", "info")
+    else:
+        flash("No hay solicitudes pendientes para atender.", "warning")
+    return redirect(url_for("inicio"))
 
 
-# print("Atendida:", atender_siguiente())
-# mostrar_estado()
+@app.post("/deshacer")
+def deshacer():
+    res = logica.deshacer_ultima_atencion()
+    if res:
+        flash(f"Se restauró la solicitud #{res['id']} a la cola de pendientes.", "info")
+    else:
+        flash("El historial está vacío, no hay atenciones que deshacer.", "warning")
+    return redirect(url_for("inicio"))
 
 
-def deshacer_ultima_atencion():
-    if not pila_historial:
-        return None
-
-    solicitud = pila_historial.pop()
-    solicitud["estado"] = "pendiente"
-    cola_pendientes.insert(0, solicitud)
-    return solicitud
-
-
-# print("Restaurada:", deshacer_ultima_atencion())
-# mostrar_estado()
-# si se atendió a Ana y después a Luis, el primer deshacer devuelve a Luis al inicio; otro deshacer devuelve a Ana antes que Luis. ¿Por qué?
-# R: Porque la pila sigue el principio del LIFO, por lo que el ultimo elemento agregado a la pila es el primer eliminado, por ende al deshacer la ultima atencion, se restaura primero a luis y luego a ana
-
-
-# Reto 1: Consultar el siguiente turno sin extraerlo
-def consultar_siguiente():
-    if not cola_pendientes:
-        return None
-    return cola_pendientes[0]
-
-
-# Reto 2: Buscar una solicitud por ID
-def buscar_solicitud(id_solicitud):
-    for solicitud in cola_pendientes:
-        if solicitud["id"] == id_solicitud:
-            return solicitud, "pendiente"
-    for solicitud in pila_historial:
-        if solicitud["id"] == id_solicitud:
-            return solicitud, "historial"
-    return None
-
-
-# Reto 3: Cancelar una solicitud pendiente
-def cancelar_solicitud(id_solicitud):
-    for solicitud in cola_pendientes:
-        if solicitud["id"] == id_solicitud:
-            cola_pendientes.remove(solicitud)
-            solicitud["estado"] = "cancelada"
-            return solicitud
-    return None
-
-
-# Reto 4: Deshacer varias atenciones
-def deshacer_varias(cantidad):
-    if cantidad <= 0:
-        return 0
-
-    recuperadas = 0
-    for _ in range(cantidad):
-        resultado = deshacer_ultima_atencion()
-        if resultado is not None:
-            recuperadas += 1
+@app.post("/deshacer_varias")
+def deshacer_varias():
+    try:
+        cant = int(request.form.get("cantidad", 0))
+        recuperadas = logica.deshacer_varias(cant)
+        if recuperadas > 0:
+            flash(f"Se deshicieron con éxito {recuperadas} atención(es).", "info")
         else:
-            break
-    return recuperadas
+            flash("No se deshizo ninguna atención (cantidad inválida o historial vacío).", "warning")
+    except ValueError:
+        flash("Por favor ingresa un número entero válido para la cantidad.", "danger")
+    return redirect(url_for("inicio"))
 
 
-def ejecutar_menu():
-    while True:
-        print("\n1. Registrar solicitud")
-        print("2. Atender siguiente")
-        print("3. Deshacer última atención")
-        print("4. Mostrar estado")
-        print("5. Consultar Siguiente")
-        print("6. Buscar ID")
-        print("7. Cancelar solicitud")
-        print("8. Deshacer varias atenciones")
-        print("0. Salir")
-        opcion = input("Opción: ").strip()
-
-        if opcion == "1":
-            cliente = input("Cliente: ")
-            asunto = input("Asunto: ")
-            resultado = registrar_solicitud(cliente, asunto)
-            print("Registrada:", resultado if resultado else "Datos inválidos o duplicados")
-        elif opcion == "2":
-            print("Atendida:", atender_siguiente())
-        elif opcion == "3":
-            print("Restaurada:", deshacer_ultima_atencion())
-        elif opcion == "4":
-            mostrar_estado()
-        elif opcion == "5":
-            print("el siguiente en la cola es:", consultar_siguiente())
-        elif opcion == "6":
-            try:
-                id = int(input("Ingrese el id a buscar: "))
-                resultado = buscar_solicitud(id)
-                if resultado:
-                    solicitud, ubicacion = resultado
-                    print(f"ID encontrado en ubicacion [{ubicacion}]:", solicitud)
-                else:
-                    print("No se encontro ninguna solicitud con ese ID")
-            except ValueError:
-                print(
-                    "El id no es valido, tiene que ser un numero entero, pruebe de nuevo."
-                )
-        elif opcion == "7":
-            try:
-                id = int(input("Ingrese el ID a cancelar: "))
-                resultado = cancelar_solicitud(id)
-                if resultado:
-                    print(f"Solicitud cancelada con exito", resultado)
-                else:
-                    print("No se encontraron solicitudes con ese ID")
-            except ValueError:
-                print("El id ingresado no es valido, ingrese un numero entero.")
-        elif opcion == "8":
-            try:
-                cantidad = int(
-                    input("Ingrese la cantidad de atenciones a deshacer: ")
-                )
-                if cantidad <= 0:
-                    print("La cantidad debe ser un número entero positivo.")
-                else:
-                    recuperadas = deshacer_varias(cantidad)
-                    print(
-                        f"Se deshicieron con éxito {recuperadas} atención(es)."
-                    )
-
-            except ValueError:
-                print(
-                    "Por favor, ingrese un número entero válido para la cantidad."
-                )
-        elif opcion == "0":
-            break
+@app.post("/cancelar")
+def cancelar():
+    try:
+        id_num = int(request.form.get("id_cancelar", 0))
+        res = logica.cancelar_solicitud(id_num)
+        if res:
+            flash(f"Solicitud #{id_num} cancelada correctamente.", "success")
         else:
-            print("Opción inválida")
+            flash(f"No se encontró una solicitud pendiente con el ID {id_num}.", "warning")
+    except ValueError:
+        flash("El ID a cancelar debe ser un número entero.", "danger")
+    return redirect(url_for("inicio"))
 
 
 if __name__ == "__main__":
-    ejecutar_menu()
+    app.run(debug=True)
