@@ -80,6 +80,19 @@ def cancelar_solicitud(id_solicitud):
             return solicitud
     return None
 
+def deshacer_varias(cantidad):
+    if cantidad <= 0:
+        return 0
+
+    recuperadas = 0
+    for _ in range(cantidad):
+        resultado = deshacer_ultima_atencion()
+        if resultado is not None:
+            recuperadas += 1
+        else:
+            break  
+    return recuperadas
+
 
 def ejecutar_menu():
     while True:
@@ -90,6 +103,7 @@ def ejecutar_menu():
         print("5. Consultar Siguiente")
         print("6. Buscar ID")
         print("7. Cancelar solicitud")
+        print("8. Deshacer varias atenciones")
         print("0. Salir")
         opcion = input("Opción: ").strip()
 
@@ -127,6 +141,17 @@ def ejecutar_menu():
                     print("No se encontraron solicitudes con ese ID")
             except ValueError:
                 print("El id ingresado no es valido, ingrese un numero entero.")
+        elif opcion == "8":
+            try:
+                cantidad = int( input("Ingrese la cantidad de atenciones a deshacer: "))
+                if cantidad <= 0:
+                    print("La cantidad debe ser un número entero positivo.")
+                else:
+                    recuperadas = deshacer_varias(cantidad)
+                    print(f"Se deshicieron con éxito {recuperadas} atención(es).")
+                    
+            except ValueError:
+                print("Por favor, ingrese un número entero válido para la cantidad.")
         elif opcion == "0":
             break
         else:
