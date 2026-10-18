@@ -188,6 +188,12 @@ def ejecutar_menu():
         else:
             print("Opción inválida")
 
-
+# ¿cuál es el costo de pop(0) e insert(0, ...) sobre una lista grande? Investiga collections.deque y explica cuándo convendría adoptarlo. En esta práctica, úsalo solo como mejora posterior, no como sustituto del ejercicio inicial.
+#R: El costo de pop(0) e insert(0, ...) sobre una lista grande es O(n), ya que al eliminar o insertar un elemento al inicio de la lista, todos los elementos restantes deben ser desplazados. Esto puede ser ineficiente para listas grandes.
+""" collections.deque es una estructura de datos que permite agregar y eliminar elementos 
+desde ambos extremos de manera eficiente, con un costo de O(1) para estas operaciones. 
+Conviene adoptarlo cuando se necesita una cola o pila que permita operaciones rápida
+s en ambos extremos, especialmente cuando se trabaja con grandes cantidades de datos y se requiere eficiencia en la 
+inserción y eliminación de elementos."""
 if __name__ == "__main__":
     ejecutar_menu()
