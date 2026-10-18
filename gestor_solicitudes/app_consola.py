@@ -72,7 +72,13 @@ def buscar_solicitud(id_solicitud):
     return None
 
 
-
+def cancelar_solicitud(id_solicitud):
+    for solicitud in cola_pendientes:
+        if solicitud["id"] == id_solicitud:
+            cola_pendientes.remove(solicitud)
+            solicitud["estado"] = "cancelada"
+            return solicitud
+    return None
 
 
 def ejecutar_menu():
@@ -83,6 +89,7 @@ def ejecutar_menu():
         print("4. Mostrar estado")
         print("5. Consultar Siguiente")
         print("6. Buscar ID")
+        print("7. Cancelar solicitud")
         print("0. Salir")
         opcion = input("Opción: ").strip()
 
@@ -110,6 +117,16 @@ def ejecutar_menu():
                     print("No se encontro ninguna solicitud con ese ID")
             except ValueError:
                 print("El id no es valido, tiene que ser un numero entero, pruebe de nuevo.")
+        elif opcion == "7":
+            try:
+                id = int(input("Ingrese el ID a cancelar: "))
+                resultado = cancelar_solicitud(id)
+                if resultado:
+                    print(f"Solicitud cancelada con exito", resultado)
+                else:
+                    print("No se encontraron solicitudes con ese ID")
+            except ValueError:
+                print("El id ingresado no es valido, ingrese un numero entero.")
         elif opcion == "0":
             break
         else:
