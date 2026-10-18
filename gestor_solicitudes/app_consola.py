@@ -1,4 +1,4 @@
-#Ejercicio de ejemplo 1.
+# Ejercicio de ejemplo 1.
 cola_pendientes = []
 pila_historial = []
 siguiente_id = 1
@@ -8,28 +8,42 @@ def mostrar_estado():
     print("\nPendientes:", cola_pendientes)
     print("Historial:", pila_historial)
 
+
 def registrar_solicitud(cliente, asunto):
     global siguiente_id
     if not cliente.strip() or not asunto.strip():
         return None
 
+    clienteunico = cliente.strip().lower()
+    asuntounico = asunto.strip().lower()
+
+    # Reto 5: Evitar duplicados en pendientes
+    for solicitud in cola_pendientes:
+        if (
+            solicitud["cliente"].strip().lower() == clienteunico
+            and solicitud["asunto"].strip().lower() == asuntounico
+        ):
+            return None
+
     solicitud = {
         "id": siguiente_id,
         "cliente": cliente.strip(),
         "asunto": asunto.strip(),
-        "estado": "pendiente"
+        "estado": "pendiente",
     }
     cola_pendientes.append(solicitud)
     siguiente_id += 1
     return solicitud
 
 
-#registrar_solicitud("Ana", "No conecta a Wi-Fi")
-#registrar_solicitud("Luis", "Impresora sin papel")
-#registrar_solicitud("Sofía", "Equipo lento")
-#mostrar_estado()
+# registrar_solicitud("Ana", "No conecta a Wi-Fi")
+# registrar_solicitud("Luis", "Impresora sin papel")
+# registrar_solicitud("Sofía", "Equipo lento")
+# mostrar_estado()
 
-print("="*20)
+print("=" * 20)
+
+
 def atender_siguiente():
     if not cola_pendientes:
         return None
@@ -40,8 +54,9 @@ def atender_siguiente():
     return solicitud
 
 
-#print("Atendida:", atender_siguiente())
-#mostrar_estado()
+# print("Atendida:", atender_siguiente())
+# mostrar_estado()
+
 
 def deshacer_ultima_atencion():
     if not pila_historial:
@@ -53,15 +68,20 @@ def deshacer_ultima_atencion():
     return solicitud
 
 
-#print("Restaurada:", deshacer_ultima_atencion())
-#mostrar_estado()
-#si se atendió a Ana y después a Luis, el primer deshacer devuelve a Luis al inicio; otro deshacer devuelve a Ana antes que Luis. ¿Por qué?
-#R: Porque la pila sigue el principio del LIFO, por lo que el ultimo elemento agregado a la pila es el primer eliminado, por ende al deshacer la ultima atencion, se restaura primero a luis y luego a ana
+# print("Restaurada:", deshacer_ultima_atencion())
+# mostrar_estado()
+# si se atendió a Ana y después a Luis, el primer deshacer devuelve a Luis al inicio; otro deshacer devuelve a Ana antes que Luis. ¿Por qué?
+# R: Porque la pila sigue el principio del LIFO, por lo que el ultimo elemento agregado a la pila es el primer eliminado, por ende al deshacer la ultima atencion, se restaura primero a luis y luego a ana
+
+
+# Reto 1: Consultar el siguiente turno sin extraerlo
 def consultar_siguiente():
     if not cola_pendientes:
         return None
     return cola_pendientes[0]
 
+
+# Reto 2: Buscar una solicitud por ID
 def buscar_solicitud(id_solicitud):
     for solicitud in cola_pendientes:
         if solicitud["id"] == id_solicitud:
@@ -72,6 +92,7 @@ def buscar_solicitud(id_solicitud):
     return None
 
 
+# Reto 3: Cancelar una solicitud pendiente
 def cancelar_solicitud(id_solicitud):
     for solicitud in cola_pendientes:
         if solicitud["id"] == id_solicitud:
@@ -80,6 +101,8 @@ def cancelar_solicitud(id_solicitud):
             return solicitud
     return None
 
+
+# Reto 4: Deshacer varias atenciones
 def deshacer_varias(cantidad):
     if cantidad <= 0:
         return 0
@@ -90,7 +113,7 @@ def deshacer_varias(cantidad):
         if resultado is not None:
             recuperadas += 1
         else:
-            break  
+            break
     return recuperadas
 
 
@@ -111,7 +134,7 @@ def ejecutar_menu():
             cliente = input("Cliente: ")
             asunto = input("Asunto: ")
             resultado = registrar_solicitud(cliente, asunto)
-            print("Registrada:", resultado if resultado else "Datos inválidos")
+            print("Registrada:", resultado if resultado else "Datos inválidos o duplicados")
         elif opcion == "2":
             print("Atendida:", atender_siguiente())
         elif opcion == "3":
@@ -130,7 +153,9 @@ def ejecutar_menu():
                 else:
                     print("No se encontro ninguna solicitud con ese ID")
             except ValueError:
-                print("El id no es valido, tiene que ser un numero entero, pruebe de nuevo.")
+                print(
+                    "El id no es valido, tiene que ser un numero entero, pruebe de nuevo."
+                )
         elif opcion == "7":
             try:
                 id = int(input("Ingrese el ID a cancelar: "))
@@ -143,15 +168,21 @@ def ejecutar_menu():
                 print("El id ingresado no es valido, ingrese un numero entero.")
         elif opcion == "8":
             try:
-                cantidad = int( input("Ingrese la cantidad de atenciones a deshacer: "))
+                cantidad = int(
+                    input("Ingrese la cantidad de atenciones a deshacer: ")
+                )
                 if cantidad <= 0:
                     print("La cantidad debe ser un número entero positivo.")
                 else:
                     recuperadas = deshacer_varias(cantidad)
-                    print(f"Se deshicieron con éxito {recuperadas} atención(es).")
-                    
+                    print(
+                        f"Se deshicieron con éxito {recuperadas} atención(es)."
+                    )
+
             except ValueError:
-                print("Por favor, ingrese un número entero válido para la cantidad.")
+                print(
+                    "Por favor, ingrese un número entero válido para la cantidad."
+                )
         elif opcion == "0":
             break
         else:
